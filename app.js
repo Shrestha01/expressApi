@@ -1,35 +1,44 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const dbConnection = require("./DBConnection/dbConnection");
+const User = require("./Schema/UserSchema");
 const app = express();
-const cors = require("cors");
 require("dotenv").config();
+const cors = require("cors");
+
+// Enable CORS for all domains (you can customize this to restrict access to specific domains)
 app.use(cors());
 
 // Middleware to parse incoming requests with JSON payloads
 app.use(express.json());
 
-// MongoDB connection string (using the 'userDetails' database)
-const mongoURI = process.env.MONGO_URI; // Local MongoDB connection
-// OR if using MongoDB Atlas:
-// const mongoURI = 'your-atlas-connection-string';
+// DBConnection
+dbConnection();
 
-mongoose
-  .connect(mongoURI)
-  .then(() => {
-    console.log("Connected to MongoDB - userDetails database");
-  })
-  .catch((err) => {
-    console.log("Failed to connect to MongoDB", err);
-  });
+// Specify the collection name 'user'
 
-// Define the User schema (ensure it matches the structure of your MongoDB 'user' collection)
-const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  id: Number,
+// Route to delete a user by ID
+app.delete("/users/:id", async (req, res) => {
+  const { id } = req.params; // Get the ID from the URL parameters
+
+  try {
+    const user = await User.findByIdAndDelete(id); // Delete user by ID
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+    res.status(200).json({
+      message: `User with deleted successfully`,
+      user,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error deleting user",
+      error: error.message,
+    });
+  }
 });
-
-// Create a model based on the schema
-const User = mongoose.model("User", userSchema, "user"); // Specify the collection name 'user'
 
 // Route to fetch all users from the 'user' collection
 app.get("/users", async (req, res) => {
