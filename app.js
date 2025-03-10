@@ -1,111 +1,87 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const dbConnection = require("./DBConnection/dbConnection");
-const User = require("./Schema/UserSchema");
-const app = express();
-require("dotenv").config();
-const cors = require("cors");
+const express = require("express"); // express js
+require("dotenv").config(); // for env variable
+const app = express(); //app
+const Menu = require("./Schema/MenuSchema");
 
-// Enable CORS for all domains (you can customize this to restrict access to specific domains)
-app.use(cors());
+const dbConnection = require("./DBConnection/dbConnection"); //DB connection
 
-// Middleware to parse incoming requests with JSON payloads
+// Set the port number
+const port = process.env.PORT;
+
+//DB connection
+dbConnection();
 app.use(express.json());
 
-// DBConnection
-dbConnection();
+// fetching all the menu from menu collection
+app.get("/menu", async (req, res) => {
+  try {
+    const menu = await Menu.find(); // Fetch all users from the database
 
-// Specify the collection name 'user'
+    res.status(200).json({
+      message: "Menu fetched successfully",
+      itemNumber: menu.length,
+      menu,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching Menu",
+      error: error.message,
+    });
+  }
+});
 
-// Route to delete a user by ID
-app.delete("/users/:id", async (req, res) => {
-  const { id } = req.params; // Get the ID from the URL parameters
+//fetch food according to category
+app.get("/menu/:category", async (req, res) => {
+  const cat = req.params;
 
   try {
-    const user = await User.findByIdAndDelete(id); // Delete user by ID
-    if (!user) {
+    const newCategory = await Menu.find(cat); // Fetch only 'Veg' items from the database
+
+    if (newCategory.length === 0) {
       return res.status(404).json({
-        message: "User not found",
+        message: "Category not found",
       });
     }
+
     res.status(200).json({
-      message: `User with deleted successfully`,
-      user,
+      message: "Category fetched successfully",
+      itemNumber: newCategory.length,
+      category: newCategory, // Send the filtered veg menu items
     });
   } catch (error) {
     res.status(500).json({
-      message: "Error deleting user",
+      message: "Error fetching Items",
       error: error.message,
     });
   }
 });
 
-// Route to fetch all users from the 'user' collection
-app.get("/users", async (req, res) => {
-  try {
-    const users = await User.find(); // Fetch all users from the database
-    res.status(200).json({
-      message: "Users fetched successfully",
-      users,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Error fetching users",
-      error: error.message,
-    });
-  }
-});
-
-// Route to fetch a specific user by name
-app.get("/users/:name", async (req, res) => {
-  const { name } = req.params;
-  console.log(name);
-
-  try {
-    const user = await User.find({ id: { $gt: name } }); // Fetch a user by email
-    console.log(user);
-    if (user) {
-      res.status(200).json({
-        message: "User found",
-        user,
-      });
-    } else {
-      res.status(404).json({
-        message: "User not found",
-      });
-    }
-  } catch (error) {
-    res.status(500).json({
-      message: "Error fetching user",
-      error: error.message,
-    });
-  }
-});
-
-// Route to insert a new user
-app.post("/users/register", async (req, res) => {
-  const { id, name } = req.body;
+//route for inserting food details on menu
+app.post("/menu/register", async (req, res) => {
+  const { name, category, description, price } = req.body;
 
   // Basic validation
-  if (!id || !name) {
+  if (!name || !category || !description || !price) {
     return res.status(400).json({
-      message: "Both 'id' and 'name' are required.",
+      message: "Please Send all the field",
     });
   }
 
   try {
     // Create a new user document and save it to the database
-    const newUser = new User({
-      id,
+    const newMenu = new Menu({
       name,
+      category,
+      description,
+      price,
     });
 
     // Save the new user
-    await newUser.save();
+    await newMenu.save();
 
     res.status(201).json({
-      message: "User added successfully",
-      user: newUser,
+      message: "Menu added successfully",
+      user: newMenu,
     });
   } catch (error) {
     console.error("Error inserting user:", error);
@@ -115,9 +91,6 @@ app.post("/users/register", async (req, res) => {
     });
   }
 });
-
-// Set the port number
-const port = process.env.PORT;
 
 // Start the server
 app.listen(port, () => {
