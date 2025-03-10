@@ -2,11 +2,15 @@ const express = require("express"); // express js
 require("dotenv").config(); // for env variable
 const app = express(); //app
 const Menu = require("./Schema/MenuSchema");
+const cors = require("cors");
 
 const dbConnection = require("./DBConnection/dbConnection"); //DB connection
 
 // Set the port number
 const port = process.env.PORT;
+
+// Enable CORS for all domains (you can customize this to restrict access to specific domains)
+app.use(cors());
 
 //DB connection
 dbConnection();
