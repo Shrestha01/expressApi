@@ -20,6 +20,7 @@ app.use(express.json());
 // Route to delete a user by ID
 app.delete("/api/menu/delete/:id", async (req, res) => {
   const { id } = req.params; // Get the ID from the URL parameters
+  console.log(id);
 
   try {
     const user = await Menu.findByIdAndDelete(id); // Delete user by ID
