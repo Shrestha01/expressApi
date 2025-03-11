@@ -16,8 +16,32 @@ app.use(cors());
 dbConnection();
 app.use(express.json());
 
+
+// Route to delete a user by ID
+app.delete("/api/menu/delete/:id", async (req, res) => {
+  const { id } = req.params; // Get the ID from the URL parameters
+
+  try {
+    const user = await Menu.findByIdAndDelete(id); // Delete user by ID
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+    res.status(200).json({
+      message: `User with deleted successfully`,
+      user,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error deleting user",
+      error: error.message,
+    });
+  }
+});
+
 // fetching all the menu from menu collection
-app.get("/menu", async (req, res) => {
+app.get("/api/menu", async (req, res) => {
   try {
     const menu = await Menu.find(); // Fetch all users from the database
 
@@ -35,7 +59,7 @@ app.get("/menu", async (req, res) => {
 });
 
 //fetch food according to category
-app.get("/menu/:category", async (req, res) => {
+app.get("/api/menu/:category", async (req, res) => {
   const cat = req.params;
 
   try {
@@ -61,7 +85,7 @@ app.get("/menu/:category", async (req, res) => {
 });
 
 //route for inserting food details on menu
-app.post("/menu/register", async (req, res) => {
+app.post("/api/menu/add", async (req, res) => {
   const { name, category, description, price } = req.body;
 
   // Basic validation
