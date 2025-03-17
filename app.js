@@ -34,21 +34,31 @@ app.post("/api/send-email", (req, res) => {
   const { name, email, message } = req.body; // getting Information from Frontend
   console.log(name, email, message);
 
+  // Email Content for Admin
   const mailOptions = {
     from: email,
     to: "adarsha.stha123@gmail.com",
     subject: name,
-
     html: `<p><strong>Name:</strong> ${name}</p><p><strong>Email:</strong> ${email}</p><p><strong>Message:</strong> ${message}</p>`,
   };
 
-  //sending mail
+  //sending mail to admin
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
       return res.status(500).send("Error Sending your Info... Sorry!!!");
     }
     res.status(200).send("Thank you for your Info...");
   });
+
+  // Email Content for User
+  const mailOptionsUser = {
+    from: "shresthaa1994@gmail.com", // admin email
+    to: email, //user email
+    subject: "Thank you for your Enquiry",
+    html: `<p>Thank you for your Enquiry. We will contact you soon.</p>`,
+  };
+
+  transporter.sendMail(mailOptionsUser);
 });
 
 // fetching all the menu from menu collection
