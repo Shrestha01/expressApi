@@ -17,7 +17,7 @@ app.use(cors());
 
 //DB connection
 dbConnection();
-
+//Express js
 app.use(express.json());
 
 //transporter for sending Email
