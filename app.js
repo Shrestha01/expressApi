@@ -3,42 +3,52 @@ require("dotenv").config(); // for env variable
 const app = express(); //app
 const Menu = require("./Schema/MenuSchema");
 const cors = require("cors");
+const nodemailer = require("nodemailer");
 
 const dbConnection = require("./DBConnection/dbConnection"); //DB connection
 
-// Set the port number
+// Importing env varibles
 const port = process.env.PORT;
+const email = process.env.GMAIL_USER;
+const pass = process.env.GMAIL_PASS;
 
 // Enable CORS for all domains (you can customize this to restrict access to specific domains)
 app.use(cors());
 
 //DB connection
 dbConnection();
+
 app.use(express.json());
 
+//transporter for sending Email
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: email,
+    pass: pass,
+  },
+});
 
-// Route to delete a user by ID
-app.delete("/api/menu/delete/:id", async (req, res) => {
-  const { id } = req.params; // Get the ID from the URL parameters
-  console.log(id);
+// API to send Email...
+app.post("/api/send-email", (req, res) => {
+  const { name, email, message } = req.body; // getting Information from Frontend
+  console.log(name, email, message);
 
-  try {
-    const user = await Menu.findByIdAndDelete(id); // Delete user by ID
-    if (!user) {
-      return res.status(404).json({
-        message: "Item not found",
-      });
+  const mailOptions = {
+    from: email,
+    to: "adarsha.stha123@gmail.com",
+    subject: name,
+
+    html: `<p><strong>Name:</strong> ${name}</p><p><strong>Email:</strong> ${email}</p><p><strong>Message:</strong> ${message}</p>`,
+  };
+
+  //sending mail
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      return res.status(500).send("Error Sending your Info... Sorry!!!");
     }
-    res.status(200).json({
-      message: `Item  deleted successfully`,
-      user,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Error deleting Item",
-      error: error.message,
-    });
-  }
+    res.status(200).send("Thank you for your Info...");
+  });
 });
 
 // fetching all the menu from menu collection
@@ -86,7 +96,7 @@ app.get("/api/menu/:category", async (req, res) => {
 });
 
 //route for inserting food details on menu
-app.post("/api/menu/add", async (req, res) => {
+app.post("/api/menu/register", async (req, res) => {
   const { name, category, description, price } = req.body;
 
   // Basic validation
@@ -123,5 +133,5 @@ app.post("/api/menu/add", async (req, res) => {
 
 // Start the server
 app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+  console.log(`Server is running`);
 });
