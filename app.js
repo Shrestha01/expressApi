@@ -20,6 +20,30 @@ dbConnection();
 //Express js
 app.use(express.json());
 
+// Delete Api for menu Items
+// Route to delete a user by ID
+app.delete("/api/menu/delete/:id", async (req, res) => {
+  const { id } = req.params; // Get the ID from the URL parameters
+
+  try {
+    const menu = await Menu.findByIdAndDelete(id); // Delete user by ID
+    if (!menu) {
+      return res.status(404).json({
+        message: "Menu Item not found",
+      });
+    }
+    res.status(200).json({
+      message: `Menu item with deleted successfully`,
+      menu,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error deleting menu",
+      error: error.message,
+    });
+  }
+});
+
 //transporter for sending Email
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -55,7 +79,7 @@ app.post("/api/send-email", (req, res) => {
     from: "shresthaa1994@gmail.com", // admin email
     to: email, //user email
     subject: "Thank you for your Enquiry",
-    html: `<p>Thank you for your Enquiry. We will contact you soon.</p>`,
+    html: `<p>Thank you for your Enquiry.</p> <p>We will contact you soon.</p>`,
   };
 
   transporter.sendMail(mailOptionsUser);
@@ -117,7 +141,7 @@ app.post("/api/menu/register", async (req, res) => {
   }
 
   try {
-    // Create a new user document and save it to the database
+    // Create a new menu item document and save it to the database
     const newMenu = new Menu({
       name,
       category,
@@ -125,7 +149,7 @@ app.post("/api/menu/register", async (req, res) => {
       price,
     });
 
-    // Save the new user
+    // Save the new menu items in database
     await newMenu.save();
 
     res.status(201).json({
