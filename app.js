@@ -26,7 +26,8 @@ app.delete("/api/menu/delete/:id", async (req, res) => {
   const { id } = req.params; // Get the ID from the URL parameters
 
   try {
-    const menu = await Menu.findByIdAndDelete(id); // Delete user by ID
+    const menu = await Menu.findByIdAndDelete(id); // Delete user by ID findbyIDAndDelete is mongoose method used to delete data from mongoDB database.
+
     if (!menu) {
       return res.status(404).json({
         message: "Menu Item not found",
@@ -38,7 +39,7 @@ app.delete("/api/menu/delete/:id", async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
-      message: "Error deleting menu",
+      message: "Error deleting menu !!!",
       error: error.message,
     });
   }
